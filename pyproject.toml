@@ -1,0 +1,10 @@
+[project]
+name = "lukasmki-github-io"
+version = "0.1.0"
+description = "Lukas' GitHub Pages Site"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "furo>=2025.12.19",
+    "sphinx>=9.1.0",
+]

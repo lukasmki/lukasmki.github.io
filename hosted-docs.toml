@@ -1,0 +1,12 @@
+# Repositories whose docs are built and published at
+# https://lukasmki.github.io/<repo name>/
+#
+# Optional keys (defaults shown):
+#   ref     = ""        # branch, tag, or sha; empty = the repo's default branch
+#   workdir = "docs"    # directory the build command runs in
+#   build   = 'uv run --frozen sphinx-build -b html source "$OUT"'
+#
+# The build command must write HTML to "$OUT".
+
+[[repo]]
+repo = "lukasmki/graphies"

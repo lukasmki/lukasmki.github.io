@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # Pick up doc changes in the repos listed in hosted-docs.toml.
+  schedule:
+    - cron: "0 6 * * *"
+  repository_dispatch:
+    types: [docs-updated]
 
 permissions:
   contents: read
@@ -15,19 +20,82 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
+  matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: matrix
+        run: python3 .github/scripts/docs_matrix.py >> "$GITHUB_OUTPUT"
+
+  site:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
       - name: Build site
         run: uv run --frozen sphinx-build -b html source build/html
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: build/html
+
+  project-docs:
+    needs: matrix
+    if: needs.matrix.outputs.matrix != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.matrix.outputs.matrix) }}
+    name: docs (${{ matrix.name }})
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ matrix.repo }}
+          ref: ${{ matrix.ref }}
+          path: project
+          token: ${{ secrets.DOCS_TOKEN || github.token }}
+      - uses: astral-sh/setup-uv@v6
+      - name: Build docs
+        working-directory: project/${{ matrix.workdir }}
+        env:
+          OUT: ${{ github.workspace }}/out
+          BUILD: ${{ matrix.build }}
+        run: eval "$BUILD"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: docs-${{ matrix.name }}
+          path: out
+
+  assemble:
+    needs: [site, project-docs]
+    # Run when project-docs was skipped (empty list), but not if any build failed,
+    # so a broken project never deploys a site that's missing its docs.
+    if: ${{ !cancelled() && needs.site.result == 'success' && needs.project-docs.result != 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: build/html
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: docs-*
+          path: project-docs
+      - name: Place project docs under /<repo name>/
+        run: |
+          shopt -s nullglob
+          for d in project-docs/docs-*; do
+            mv "$d" "build/html/${d#project-docs/docs-}"
+          done
       - uses: actions/upload-pages-artifact@v3
         with:
           path: build/html
 
   deploy:
-    needs: build
+    needs: assemble
     runs-on: ubuntu-latest
     environment:
       name: github-pages

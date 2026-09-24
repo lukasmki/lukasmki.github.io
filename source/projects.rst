@@ -1,9 +1,9 @@
 Projects
 ========
 
-.. TODO: list your projects here.
+graphies
+--------
 
-Project name
-------------
-
-Short description of the project. `Source <https://github.com/lukasmki>`_
+GRAPH Indexed Embedded Strings.
+`Docs <https://lukasmki.github.io/graphies/>`_ ·
+`Source <https://github.com/lukasmki/graphies>`_

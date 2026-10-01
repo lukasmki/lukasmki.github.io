@@ -10,12 +10,16 @@
 
 [[repo]]
 repo = "lukasmki/graphies"
+build = 'uv run --frozen sphinx-build -b html source "$OUT"'
 
 [[repo]]
 repo = "lukasmki/mpi4agents"
+build = 'uv run --frozen sphinx-build -b html . "$OUT"'
 
 [[repo]]
 repo = "lukasmki/fast-forces"
+build = 'uv run --frozen sphinx-build -b html . "$OUT"'
 
 [[repo]]
 repo = "lukasmki/DynamicTopology"
+build = 'uv run --frozen sphinx-build -b html . "$OUT"'

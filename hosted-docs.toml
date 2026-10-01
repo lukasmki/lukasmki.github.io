@@ -11,8 +11,8 @@
 [[repo]]
 repo = "lukasmki/graphies"
 
-# [[repo]]
-# repo = "lukasmki/mpi4agents"
+[[repo]]
+repo = "lukasmki/mpi4agents"
 
 [[repo]]
 repo = "lukasmki/fast-forces"
